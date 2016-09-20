@@ -1,0 +1,52 @@
+---
+# installing dependencies
+- name: install apt dependencies
+  apt: name={{ item }} update_cache=yes state=latest
+  with_items:
+  - build-essential
+  - git
+  - libevent-dev
+  - libreadline-dev 
+  - libconfig-dev 
+  - libssl-dev 
+  - lua5.2 
+  - liblua5.2-dev 
+  - libevent-dev 
+  - libjansson-dev 
+  - libpython-dev  
+  when: ansible_os_family == "Debian"
+
+- name: install yum dependencies
+  yum: name={{ item }} state=present
+  with_items:
+  - lua-devel 
+  - openssl-devel 
+  - libconfig-devel 
+  - readline-devel 
+  - libevent-devel 
+  - jansson-devel 
+  - python-devel
+  - git
+  - "@Development Tools"
+  when: ansible_os_family == "RedHat"
+
+# tasks file for tg-cli
+- name: download tg-cli (won't use vysheng/tg as it's not been updated for months)
+  git: clone=yes dest={{ download }} recursive=yes repo="https://github.com/Cojad/tg.git" update=yes
+
+- name: configure telegram
+  shell: chdir="{{ download }}" ./configure --prefix={{ prefix }} --enable-python
+
+- name: make tg
+  shell: chdir="{{ download }}" make
+
+- name: install tg
+  file: state=link dest="{{ prefix }}/{{item}}" src="{{ download }}/{{item}}" 
+  with_items:
+  - bin/telegram-cli
+  - bin/tl-parser
+  - bin/generate
+
+- name: copy library
+  file: state=link dest="{{ prefix }}/lib/libtgl.a" src="{{ download }}/libs/libtgl.a"
+

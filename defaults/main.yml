@@ -1,0 +1,4 @@
+---
+# defaults file for tg-cli
+- download:  "/opt/tg-cli/"
+- prefix: "/usr/local/"
